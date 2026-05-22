@@ -7,13 +7,13 @@ export const MODULOS_OBMEP = [
     title: 'Aritmética',
     desc: 'Números inteiros, divisibilidade, MMC e MDC',
     status: 'active',
-    unlockHint: null,
+    unlockHint:'done',
     aulas: [
-      { id: 'ar-1', title: 'Números Inteiros e Operações', dur: '12min', watched: false, videoId: null },
-      { id: 'ar-2', title: 'Divisibilidade e Critérios',  dur: '15min', watched: false, videoId: null },
-      { id: 'ar-3', title: 'MMC e MDC',                   dur: '18min', watched: false, videoId: null },
+      { id: 'ar-1', title: 'Números Inteiros e Operações', dur: '12min', watched: true, videoId:'dQw4w9WgXcQ' },
+      { id: 'ar-2', title: 'Divisibilidade e Critérios',  dur: '15min', watched: true, videoId:'dQw4w9WgXcQ' },
+      { id: 'ar-3', title: 'MMC e MDC',                   dur: '18min', watched: true, videoId:'dQw4w9WgXcQ' },
     ],
-    atividade: { questoes: 5, concluida: false },
+    atividade: { questoes: 8, concluida: true },
     questoes: [
       { id: 'ar-q1', fonte:'OBMEP · Fase 1', enunciado: 'Qual é MDC de 48 e 36?', alternativas: ['6', '8', '12', '24'], correta: 0},
       { id: 'ar-q2',fonte: 'OBMEP · Fase 1', enunciado: 'Qual é o MMC de 4 e 6?',  alternativas: ['12', '24', '18', '6'], correta: 0, },
