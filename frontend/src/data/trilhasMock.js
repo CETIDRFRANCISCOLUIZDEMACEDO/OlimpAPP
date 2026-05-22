@@ -6,8 +6,8 @@ export const MODULOS_OBMEP = [
     num: 1,
     title: 'Aritmética',
     desc: 'Números inteiros, divisibilidade, MMC e MDC',
-    status: 'active',
-    unlockHint:'done',
+    status: 'done',
+    unlockHint: null,
     aulas: [
       { id: 'ar-1', title: 'Números Inteiros e Operações', dur: '12min', watched: true, videoId:'dQw4w9WgXcQ' },
       { id: 'ar-2', title: 'Divisibilidade e Critérios',  dur: '15min', watched: true, videoId:'dQw4w9WgXcQ' },
