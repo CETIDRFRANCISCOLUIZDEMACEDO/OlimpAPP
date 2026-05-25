@@ -6,18 +6,11 @@ const CheckIcon = () => (
   </svg>
 )
 
-export default function AulaVideoScreen({ onNavigate, onBack, currentAula, onMarkWatched }) {
+export default function AulaVideoScreen({ onNavigate, onBack, currentAula}) {
   const aula = currentAula
   const iframeRef = useRef(null)
 
-  const [watched, setWatched] = useState(false)
-
-  useEffect(() => {
-    if (!aula?.id) return
-    getWatchedAulas()
-      .then(set => setWatched(set.has(aula.id)))
-      .catch(() => setWatched(aula?.watched ?? false))
-  }, [aula?.id])
+  const [watched, setWatched] = useState(aula?.watched ?? false)
 
   if (!aula) {
     return (
@@ -26,10 +19,9 @@ export default function AulaVideoScreen({ onNavigate, onBack, currentAula, onMar
       </div>
     )
   }
-
+   
   const nextAula       = aula.allAulas?.[aula.aulaIndex + 1] ?? null
   const aulaNumeral    = `Aula ${aula.aulaIndex + 1} de ${aula.allAulas?.length ?? 1}`
-  const olimpiadaLabel = aula.olimpiada ? aula.olimpiada.toUpperCase() + ' · Fase 1' : 'Fase 1'
   const embedUrl    = aula.videoId
     ? `https://www.youtube.com/embed/${aula.videoId}?rel=0&modestbranding=1&enablejsapi=1`
     : null
@@ -45,20 +37,10 @@ export default function AulaVideoScreen({ onNavigate, onBack, currentAula, onMar
     pauseVideo()
     onBack('screen-modulo')
   }
-
-  const handleMarkWatched = async () => {
-    setWatched(true)
-    try {
-      await markAsWatched(aula.id)
-      onMarkWatched?.(aula.id)
-    } catch {
-      // falha silenciosa — o state local já foi atualizado
-    }
-  }
-
-  const goToNext = () => {
+   
+     const goToNext = () => {
     pauseVideo()
-    onNavigate('screen-aula-video', {
+    onNavigate('screen-aula-video',{   
       aula: {
         ...nextAula,
         aulaIndex:   aula.aulaIndex + 1,
@@ -121,7 +103,7 @@ export default function AulaVideoScreen({ onNavigate, onBack, currentAula, onMar
             </svg>
             {aula.dur}
             <span style={{ color: 'var(--border)' }}>·</span>
-            {olimpiadaLabel}
+            OBMEP Fase 1
           </div>
         </div>
 
@@ -129,7 +111,7 @@ export default function AulaVideoScreen({ onNavigate, onBack, currentAula, onMar
         <div className="av-actions">
           <button
             className={`av-btn-watched${watched ? ' done' : ''}`}
-            onClick={handleMarkWatched}
+            onClick={() => setWatched(true)}
             disabled={watched}
           >
             <CheckIcon />
