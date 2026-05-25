@@ -22,8 +22,6 @@ function computeStatus(baseModulos, olimpiada, progresso) {
   })
 }
 
-      return first ? first.toLowerCase() : null
-    }
  ...m,
    id: `oba-${m.id}`,
      aulas: m.aulas.map(a => ({ ...a, watched: false })),
