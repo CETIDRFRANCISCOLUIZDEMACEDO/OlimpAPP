@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { getWatchedAulas, markAsWatched } from '../services/aulasService'
 
 const CheckIcon = () => (
