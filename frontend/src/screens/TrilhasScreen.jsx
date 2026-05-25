@@ -1,12 +1,14 @@
-import { useState, useEffect } de 'react'
-import BottomNav de '../components/BottomNav'
-import ModuleCard de '../components/ModuleCard'
-importar { MODULOS_OBMEP } de '.. /data/trilhasMock'
-importar { getProgresso } de '.. /serviços/progressoService'
+  import { useState, useEffect } from 'react'
+import BottomNav from '../components/BottomNav'
+import ModuleCard from '../components/ModuleCard'
+import { getTrilha } from '../services/trilhasService'
+import { getProgressoDetalhado } from '../services/progressoService'
+
+const OLIMPIADAS_COM_CONTEUDO = ['OBMEP', 'OBA']
 
 function computeStatus(baseModulos, olimpiada, progresso) {
   const doneIds = new Set(
-    progresso.filter(p => p.olimpiada === olimpiada && p.completed).map(p => p.module_id)
+    progresso.filter(p => p.olimpiada === olimpiada && p.completed).map(p => p.modulo_id)
   )
   return baseModulos.map((mod, i) => {
     const done   = doneIds.has(mod.id)
@@ -22,26 +24,59 @@ function computeStatus(baseModulos, olimpiada, progresso) {
   })
 }
 
- ...m,
-   id: `oba-${m.id}`,
-     aulas: m.aulas.map(a => ({ ...a, watched: false })),
-     unlockHint: i > 0 ? 'Conclua o módulo anterior para desbloquear' : null,
-}))
-    
-  export default function TrilhasScreen({ onNavigate, onBack, activeNav }) {
-  })const [activePill, setActivePill] = useState('obmep')
-  const [progresso,  setProgresso]  = useState([])
-     const [loading,    setLoading]    = useState(true)
-   
+export default function TrilhasScreen({ onNavigate, onBack, activeNav, profile, progresso = [] }) {
+  const [olimpiadas, setOlimpiadas] = useState(() => {
+    if (Array.isArray(profile?.olimpiadas) && profile.olimpiadas.length > 0) {
+      return profile.olimpiadas.map(o => o.toUpperCase())
+    }
+    return ['OBMEP', 'OBA']
+  })
+
+  const [activePill, setActivePill] = useState(() => {
+    if (Array.isArray(profile?.olimpiadas) && profile.olimpiadas.length > 0) {
+      const list = profile.olimpiadas.map(o => o.toUpperCase())
+      const first = list.find(o => OLIMPIADAS_COM_CONTEUDO.includes(o))
+      return first ? first.toLowerCase() : null
+    }
+    return 'obmep'
+  })
+
+  const [modulosOBMEP,     setModulosOBMEP]     = useState([])
+  const [modulosOBA,       setModulosOBA]       = useState([])
+  const [loading,          setLoading]          = useState(true)
+  const [progressoDetalhado, setProgressoDetalhado] = useState({})
+
   useEffect(() => {
-  getProgresso()
-       .then(data => setProgresso(Array.isArray(data) ? data : []))
-       .catch(() => setProgresso([]))
-       .finally(() => setLoading(false))
-   }, [])
-  
-  const modOBMEP = computeStatus(MODULOS_OBMEP, 'obmep', progresso)
-  const modOBA   = computeStatus(BASE_OBA,      'oba',   progresso)
+    Promise.all([
+      getTrilha('obmep').catch(() => []),
+      getTrilha('oba').catch(() => []),
+      getProgressoDetalhado('obmep').catch(() => []),
+      getProgressoDetalhado('oba').catch(() => []),
+    ]).then(([obmepData, obaData, progOBMEP, progOBA]) => {
+      setModulosOBMEP(Array.isArray(obmepData) ? obmepData : [])
+      setModulosOBA(Array.isArray(obaData) ? obaData : [])
+      const map = {}
+      ;[...(Array.isArray(progOBMEP) ? progOBMEP : []), ...(Array.isArray(progOBA) ? progOBA : [])].forEach(p => {
+        map[p.modulo_id] = p.progresso
+      })
+      setProgressoDetalhado(map)
+    }).finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    if (!Array.isArray(profile?.olimpiadas) || profile.olimpiadas.length === 0) return
+    const list = profile.olimpiadas.map(o => o.toUpperCase())
+    setOlimpiadas(list)
+    setActivePill(prev => {
+      const prevUpper = prev ? prev.toUpperCase() : ''
+      if (prev && list.includes(prevUpper)) return prev
+      const first = list.find(o => OLIMPIADAS_COM_CONTEUDO.includes(o))
+      return first ? first.toLowerCase() : null
+    })
+  }, [profile?.olimpiadas])
+
+  const modOBMEP = computeStatus(modulosOBMEP, 'obmep', progresso)
+  const modOBA   = computeStatus(modulosOBA,   'oba',   progresso)
 
   const trData = {
     obmep: {
@@ -56,36 +91,11 @@ function computeStatus(baseModulos, olimpiada, progresso) {
     },
   }
 
-     const d         = trData[activePill]
-     const concluded = d.modulos.filter(m => m.status === 'done').length
-     const pct       = Math.round(concluded / d.modulos.length * 100)
-     const sub       = `${concluded} de ${d.modulos.length} módulos concluídos`
-
-return (
-     <>
-        <div className="db-scroll">
-          {/* Top bar */}
-          <div className="tr-topbar">
-            <button className="icon-btn" onClick={() => onBack()}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 5l-7 7 7 7"/>
-              </svg>
-            </button
-            <div className="tr-topbar-title">Trilhas</div>
-            <button className="icon-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 6h16M7 12h10M10 18h4"/>
-              </svg>
-            </button>
-          </div>
-          {/* Pills */}
-          <div className="tr-pills">
-            <button className={`tr-pill${activePill === 'obmep' ? ' active' : ''}`} onClick={() => setActivePill('obmep')}>OBMEP</button>
-            <button className={`tr-pill${activePill === 'oba'   ? ' active' : ''}`} onClick={() => setActivePill('oba')}>OBA</button>
-button className={`tr-pill${activePill === 'oba'   ? ' active' : ''}`} onClick={() => setActivePill('oba')}>OBA</button>
   const d         = activePill ? trData[activePill] : null
   const concluded = d ? d.modulos.filter(m => m.status === 'done').length : 0
-  const pct       = d && d.modulos.length > 0 ? Math.round(concluded / d.modulos.length * 100) : 0
+  const pct       = d && d.modulos.length > 0
+    ? Math.round(d.modulos.reduce((acc, m) => acc + (progressoDetalhado[m.id] ?? 0), 0) / d.modulos.length)
+    : 0
   const sub       = d ? `${concluded} de ${d.modulos.length} módulos concluídos` : ''
 
   return (
@@ -98,12 +108,12 @@ button className={`tr-pill${activePill === 'oba'   ? ' active' : ''}`} onClick={
               <path d="M15 5l-7 7 7 7"/>
             </svg>
           </button>
-          
+          <div className="tr-topbar-title">Trilhas</div>
           <div style={{ width: '40px' }} />
         </div>
 
-          <div className="tr-banner-sub">{loading ? 'Carregando…' : sub}</div>
-        
+        {/* Pills */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           {olimpiadas.map(o => {
             const key     = o.toLowerCase()
             const hasData = OLIMPIADAS_COM_CONTEUDO.includes(o)
@@ -197,6 +207,7 @@ button className={`tr-pill${activePill === 'oba'   ? ' active' : ''}`} onClick={
                   desc={mod.desc}
                   unlockHint={mod.unlockHint}
                   aulaCount={mod.aulas.length}
+                  progressoPct={progressoDetalhado[mod.id]}
                   onClick={mod.status !== 'locked'
                     ? () => onNavigate('screen-modulo', { module: mod })
                     : undefined
